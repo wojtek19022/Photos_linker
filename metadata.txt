@@ -6,14 +6,14 @@
 name=Photo linker
 qgisMinimumVersion=3.20
 description=That is a plugin to link photos with points in shapefiles
-version=1.0
+version=0.2
 author=Wojciech Sołyga
 email=wojciech.solyga2@gmail.com
 
 about=That is a plugin that generates point features that cointain photos X,Y and path to a photo
 
-tracker=http://bugs
-repository=http://repo
+tracker=https://github.com/wojtek19022/Photos-linker/issues
+repository=https://github.com/wojtek19022/Photos-linker
 # End of mandatory metadata
 
 # Recommended items:
