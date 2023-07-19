@@ -37,7 +37,7 @@ import os
 from exif import Image
 import subprocess
 import sys
-
+import processing
 
 class Photo_Link:
     """QGIS Plugin Implementation."""
@@ -198,11 +198,11 @@ class Photo_Link:
             self.dlg = Photo_LinkDialog()
 
         # show the dialog
+        subprocess.check_call(['python', '-m', 'pip', 'install', 'exif'])
         self.dlg.show()
         self.dlg.OK.clicked.connect(self.linker)
-        self.dlg.fileName.textChanged.connect(self.folder_input)
-
-        self.dlg.fileName_2.textChanged.connect(self.folder_output)
+        self.dlg.fileName.fileChanged.connect(self.folder_input)
+        self.dlg.fileName_2.fileChanged.connect(self.folder_output)
 
         # Run the dialog event loop
         result = self.dlg.exec_()
@@ -220,126 +220,141 @@ class Photo_Link:
         X_pop = []
         Y_pop = []
         sciezka = []
-        lista_obiektow = []
 
-        if self.dlg.fileName.text() == "":
+        if self.dlg.fileName.filePath() == "":
             QMessageBox(QMessageBox.Warning, "Ostrzeżenie:","Nie wybrano żadnego folderu ze zdjęciami. Przed kontunuacją wybierz folder ze zdjęciami").exec_()
 
-        elif not os.path.isdir(self.dlg.fileName.text()):
+        elif not os.path.isdir(self.dlg.fileName.filePath()):
             QMessageBox(QMessageBox.Warning, "Ostrzeżenie:",
                         "Ścieżka niepoprawna. Sprawdź, czy ścieżka istnieje").exec_()
         else:
             w = os.listdir(self.input)
-        #
+
             for i in w:
                 lista.append((self.input + '\\' + i))
-        #
+
             for i in lista:
                 with open(i, 'rb') as src:
                     img = Image(src)
-                    X = img.gps_longitude
-                    Y = img.gps_latitude
+                    try:
+                        X = img.gps_longitude
+                        Y = img.gps_latitude
 
-                    coordinates_X.append(X)
-                    coordinates_Y.append(Y)
-        #
-            for x, y in zip(coordinates_X, coordinates_Y):
-                X_pop.append(x[0] + x[1] / 60 + x[2] / 3600)
-                Y_pop.append(y[0] + y[1] / 60 + y[2] / 3600)
+                        coordinates_X.append(X)
+                        coordinates_Y.append(Y)
+                    except:
+                        QMessageBox(QMessageBox.Warning, "Ostrzeżenie:","Zdjęcia nie posiadają zapisanej lokalizacji, sprawdź, czy przed zrobieniem zdjęcia była włączona lokalizacja.").exec_()
+                        break
+            if not len(coordinates_X) == 0:
+                for x, y in zip(coordinates_X, coordinates_Y):
+                    X_pop.append(x[0] + x[1] / 60 + x[2] / 3600)
+                    Y_pop.append(y[0] + y[1] / 60 + y[2] / 3600)
 
-            project = QgsProject.instance()
-            layers = project.mapLayers()
+                project = QgsProject.instance()
+                layers = project.mapLayers()
 
+                OSM = 'type=xyz&url=https://tile.openstreetmap.org/{z}/{x}/{y}.png&zmax=19&zmin=0'
+                OSM_layer = QgsRasterLayer(OSM, 'OpenStreetMap', 'wms')
+                root = project.layerTreeRoot()
 
-            OSM = 'type=xyz&url=https://tile.openstreetmap.org/{z}/{x}/{y}.png&zmax=19&zmin=0'
-            OSM_layer = QgsRasterLayer(OSM, 'OpenStreetMap', 'wms')
-            root = project.layerTreeRoot()
+                lista_obiektow = [layer for layer in layers]
 
+                if not 'OpenStreetMap' in [i.name() for i in layers.values()]:
+                    project.addMapLayer(OSM_layer,False)
+                    root.insertLayer(int(len(lista_obiektow) + 1), OSM_layer)
+                else:
+                    pass
 
-            for layer in layers:
-                lista_obiektow.append(layer)
+                uri = "Point?crs=EPSG:4326&field=lat:double&field=lon:double&index=yes"
+                project.setCrs(QgsCoordinateReferenceSystem("EPSG:4326"))
+                layer = QgsVectorLayer(uri, "Zdjęcia", "Memory")
+                project.addMapLayer(layer)
+                pr = layer.dataProvider()  # need to create a data provider
+                pr.addAttributes([QgsField("Path", QVariant.String)])
+                layer.updateFields()
 
+                # Edycja symboliki warstwy
 
-            if not 'OpenStreetMap' in [i.name() for i in layers.values()]:
-                project.addMapLayer(OSM_layer,False)
-                root.insertLayer(int(len(lista_obiektow) + 1), OSM_layer)
+                single_symbol_renderer = layer.renderer()
+                symbol = single_symbol_renderer.symbol()
+
+                # Set fill colour
+                symbol.setColor(QColor.fromRgb(255, 255, 255))
+                # Set size of point feature
+                symbol.setSize(2)
+                # Set fill style
+                # symbol.symbolLayer(0).setBrushStyle()
+                # Set stroke colour
+                symbol.symbolLayer(0).setStrokeColor(QColor(0, 0, 0))
+
+                for r in zip(lista, X_pop, Y_pop):
+                    sciezka.append(r[0])
+                    f = QgsFeature(layer.fields())
+
+                    f["lon"] = float(r[1])
+                    f["lat"] = float(r[2])
+                    f["Path"] = str(r[0])
+
+                    geom = QgsGeometry.fromPointXY(QgsPointXY(r[1], r[2]))
+                    f.setGeometry(geom)
+                    layer.dataProvider().addFeatures([f])
+                    layer.updateFields()
+
+                ### Zmienianie układu WGS 84 na PL-1992
+                crs = QgsCoordinateReferenceSystem("EPSG:2180")
+                project.setCrs(crs)
+                parameter = {
+                    'INPUT': layer,
+                    'TARGET_CRS': 'EPSG:2180',
+                    'OUTPUT': 'memory:Reprojected'
+                }
+                result = processing.run('native:reprojectlayer', parameter)['OUTPUT']
+                project.instance().addMapLayer(result)
+
+                result.startEditing()
+                for r in result.getFeatures():
+                    f = QgsFeature(layer.fields())
+                    point = r.geometry().asPoint()
+
+                    result.changeAttributeValue(r.id(),0,float(point.x()))
+                    result.changeAttributeValue(r.id(),1,float(point.y()))
+                    result.updateExtents()
+
+                result.commitChanges()
+
+                # Function zooms to extent of a layer
+                self.canvas.setExtent(result.extent())
+                self.canvas.refresh()
+
+                # add action to open linked document
+                action = QgsAction(QgsAction.OpenUrl, 'Open file', '[% "Path" %]')
+                my_scopes = {'Field', 'Canvas', 'Field', 'Feature'}
+                action.setActionScopes(my_scopes)
+
+                actionManager = result.actions()
+                actionManager.addAction(action)
+
+                # The only line added from your answer
+                actionManager.setDefaultAction('Canvas', action.id())
+                # Zapisywanie warstwy do ścieżki lokalnej
+                if self.dlg.fileName_2.filePath() == "":
+                    self.iface.messageBar().pushSuccess("Sukces",
+                                                        "Warstwa z sukcesem została utworzona w pamięci")
+                elif not self.dlg.fileName_2.filePath().split(".")[-1]=="shp":
+                    QMessageBox(QMessageBox.Warning, "Ostrzeżenie:","Ścieżka niepoprawna. Sprawdź, czy ścieżka istnieje").exec_()
+                else:
+                    QgsVectorFileWriter.writeAsVectorFormat(result, self.output, "utf-8",driverName="ESRI Shapefile")
+                    project.instance().removeMapLayer(layer)
+                    self.iface.messageBar().pushSuccess("Sukces",
+                                                        f"Obiekty z sukcesem zostały wyeksportowane do ścieżki: {self.output}")
             else:
                 pass
 
-            uri = "Point?crs=EPSG:4326&field=lat:double&field=lon:double&index=yes"
-            layer = QgsVectorLayer(uri, "Zdjęcia", "Memory")
-            project.addMapLayer(layer)
-            pr = layer.dataProvider()  # need to create a data provider
-            pr.addAttributes([QgsField("Path", QVariant.String)])
-            layer.updateFields()
-
-            # Edycja symboliki warstwy
-
-            single_symbol_renderer = layer.renderer()
-            symbol = single_symbol_renderer.symbol()
-
-            # Set fill colour
-            symbol.setColor(QColor.fromRgb(255, 255, 255))
-            # Set size of point feature
-            symbol.setSize(2)
-            # Set fill style
-            # symbol.symbolLayer(0).setBrushStyle()
-            # Set stroke colour
-            symbol.symbolLayer(0).setStrokeColor(QColor(0, 0, 0))
-
-            for r in zip(lista, X_pop, Y_pop):
-                sciezka.append(r[0])
-                f = QgsFeature(layer.fields())
-
-                f["lon"] = float(r[1])
-                f["lat"] = float(r[2])
-                f["Path"] = str(r[0])
-
-                geom = QgsGeometry.fromPointXY(QgsPointXY(r[1], r[2]))
-                f.setGeometry(geom)
-                layer.dataProvider().addFeatures([f])
-                layer.updateFields()
-
-            # add action to open linked document
-            action = QgsAction(QgsAction.OpenUrl, 'Open file', '[% "Path" %]')
-            my_scopes = {'Field', 'Canvas', 'Form', 'Field', 'Layer', 'Feature'}
-            action.setActionScopes(my_scopes)
-
-            actionManager = layer.actions()
-            actionManager.addAction(action)
-
-            # The only line added from your answer
-            actionManager.setDefaultAction('Canvas', action.id())
-
-            # Function zooms to extent of a layer
-            self.canvas.setExtent(layer.extent())
-
-            # Zapisywanie warstwy do ścieżki lokalnej
-            if self.dlg.fileName_2.text() == "":
-                self.iface.messageBar().pushSuccess("Sukces",
-                                                    "Warstwa z sukcesem została utworzona w pamięci")
-            elif not os.path.isdir(self.dlg.fileName_2.text()):
-                QMessageBox(QMessageBox.Warning, "Ostrzeżenie:","Ścieżka niepoprawna. Sprawdź, czy ścieżka istnieje").exec_()
-            else:
-                path_save = self.dlg.fileName_2.text()+ "\\my_shapes.shp"
-                QgsVectorFileWriter.writeAsVectorFormat(layer, path_save, "utf-8",driverName="ESRI Shapefile")
-                self.iface.messageBar().pushSuccess("Sukces",
-                                                    f"Obiekty z sukcesem zostały wyeksportowane do ścieżki: {path_save}")
-            layer.updateExtents()
-
-            ### Zmienianie układu WGS 84 na PL-1992
-            # crs = QgsCoordinateReferenceSystem("EPSG:2180")
-            # project.setCrs(crs)
-            self.canvas.refresh()
-
     def folder_input(self):
-        self.input = self.dlg.fileName.text()
-
-    # def OpenBrowse(self):
-    #     filename1 = self.dlg.getOpenFileName()
+        self.input = self.dlg.fileName.filePath()
 
     def folder_output(self):
-        self.output = self.dlg.fileName_2.text()
+        self.output = self.dlg.fileName_2.filePath()
 
 
     # self.package = "Exit"

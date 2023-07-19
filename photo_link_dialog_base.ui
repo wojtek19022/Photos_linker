@@ -56,17 +56,17 @@
     <rect>
      <x>240</x>
      <y>40</y>
-     <width>131</width>
-     <height>141</height>
+     <width>132</width>
+     <height>142</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
+    <item row="0" column="0" alignment="Qt::AlignRight|Qt::AlignBottom">
      <widget class="QLabel" name="label">
       <property name="maximumSize">
        <size>
-        <width>200</width>
-        <height>200</height>
+        <width>130</width>
+        <height>140</height>
        </size>
       </property>
       <property name="autoFillBackground">
@@ -136,7 +136,7 @@
      <x>20</x>
      <y>240</y>
      <width>551</width>
-     <height>31</height>
+     <height>32</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -153,19 +153,9 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="fileName"/>
-      </item>
-      <item>
-       <widget class="QPushButton" name="browser">
-        <property name="text">
-         <string>Browse</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="Cancel_2">
-        <property name="text">
-         <string>Clear</string>
+       <widget class="QgsFileWidget" name="fileName">
+        <property name="storageMode">
+         <enum>QgsFileWidget::GetDirectory</enum>
         </property>
        </widget>
       </item>
@@ -179,16 +169,16 @@
      <x>20</x>
      <y>280</y>
      <width>551</width>
-     <height>31</height>
+     <height>32</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_7">
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_5">
-      <item alignment="Qt::AlignHCenter">
+      <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
        <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>   Folder do zapisu </string>
+         <string>Lokalizacja pliku SHP</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
@@ -196,19 +186,12 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="fileName_2"/>
-      </item>
-      <item>
-       <widget class="QPushButton" name="browser_2">
-        <property name="text">
-         <string>Browse</string>
+       <widget class="QgsFileWidget" name="fileName_2">
+        <property name="filter">
+         <string>Shapefile (*.shp)</string>
         </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="Cancel_3">
-        <property name="text">
-         <string>Clear</string>
+        <property name="storageMode">
+         <enum>QgsFileWidget::SaveFile</enum>
         </property>
        </widget>
       </item>
@@ -217,13 +200,14 @@
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QgsFileWidget</class>
+   <extends>QWidget</extends>
+   <header>qgsfilewidget.h</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
-  <tabstop>fileName</tabstop>
-  <tabstop>browser</tabstop>
-  <tabstop>Cancel_2</tabstop>
-  <tabstop>fileName_2</tabstop>
-  <tabstop>browser_2</tabstop>
-  <tabstop>Cancel_3</tabstop>
   <tabstop>OK</tabstop>
   <tabstop>Cancel</tabstop>
  </tabstops>
@@ -242,38 +226,6 @@
     <hint type="destinationlabel">
      <x>576</x>
      <y>-14</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>Cancel_3</sender>
-   <signal>clicked()</signal>
-   <receiver>fileName_2</receiver>
-   <slot>clear()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>538</x>
-     <y>297</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>341</x>
-     <y>303</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>Cancel_2</sender>
-   <signal>clicked()</signal>
-   <receiver>fileName</receiver>
-   <slot>clear()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>512</x>
-     <y>253</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>358</x>
-     <y>256</y>
     </hint>
    </hints>
   </connection>
