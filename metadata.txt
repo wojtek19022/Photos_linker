@@ -4,9 +4,9 @@
 
 [general]
 name=Photo linker
-qgisMinimumVersion=3.20
-description=That is a plugin to link photos with points in shapefiles
-version=0.2
+qgisMinimumVersion=3.22
+description=That is a plugin to link photos with points in vector file
+version=0.3
 author=Wojciech Sołyga
 email=wojciech.solyga2@gmail.com
 
@@ -20,10 +20,15 @@ repository=https://github.com/wojtek19022/Photos-linker
 
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
-# changelog=
+changelog=
+	In version 0.3:
+	- Added possibility to save file to geopackage
+	- Fixed adding only layer in memory if directory to save isn't loaded
+	- UI file changed
+	- Added plugin icon in a QGIS bar
 
 # Tags are comma separated with spaces allowed
-tags=python,shapefile,photos,pyqgis
+tags=python,shapefile, geopackage,photos,pyqgis
 
 homepage=http://homepage
 category=Plugins
@@ -40,7 +45,7 @@ deprecated=False
 # plugin_dependencies=
 
 Category of the plugin: Raster, Vector, Database or Web
-# category=
+# category= Vector
 
 # If the plugin can run on QGIS Server.
 server=False

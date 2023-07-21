@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/plugins/photo_link" >
+    <qresource prefix="/plugins/Photos_linker" >
         <file>icon.png</file>
     </qresource>
 </RCC>
