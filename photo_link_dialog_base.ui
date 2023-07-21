@@ -35,6 +35,9 @@
    <iconset>
     <normaloff>Zdjecia/localization_icon_1.png</normaloff>Zdjecia/localization_icon_1.png</iconset>
   </property>
+  <property name="toolTip">
+   <string notr="true"/>
+  </property>
   <widget class="QWidget" name="gridLayoutWidget">
    <property name="geometry">
     <rect>
@@ -105,7 +108,7 @@
       <item alignment="Qt::AlignHCenter">
        <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>Version: 0.2</string>
+         <string>Version: 0.3</string>
         </property>
        </widget>
       </item>
@@ -137,6 +140,18 @@
       </item>
       <item>
        <widget class="QgsFileWidget" name="fileName">
+        <property name="toolTip">
+         <string notr="true"/>
+        </property>
+        <property name="statusTip">
+         <string notr="true"/>
+        </property>
+        <property name="whatsThis">
+         <string notr="true"/>
+        </property>
+        <property name="accessibleName">
+         <string notr="true"/>
+        </property>
         <property name="storageMode">
          <enum>QgsFileWidget::GetDirectory</enum>
         </property>
@@ -170,8 +185,11 @@
       </item>
       <item>
        <widget class="QgsFileWidget" name="fileName_2">
+        <property name="toolTip">
+         <string notr="true"/>
+        </property>
         <property name="filter">
-         <string>Shapefile (*.shp)</string>
+         <string>Shapefile (*.shp), Geopackage (*.gpkg)</string>
         </property>
         <property name="storageMode">
          <enum>QgsFileWidget::SaveFile</enum>

@@ -168,16 +168,15 @@ class Photo_Link:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = r':/plugins/photo_link/icon.png'
+        icon_path = ':/plugins/Photos_linker/icon.png'
         self.add_action(
             icon_path,
-            text=self.tr(u'Generuj lokalizacje zdjęć'),
+            text=self.tr(u'Generate Images locations'),
             callback=self.run,
             parent=self.iface.mainWindow())
 
         # will be set False in run()
         self.first_start = True
-
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
@@ -211,6 +210,11 @@ class Photo_Link:
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
             pass
+    def folder_input(self):
+        self.input = self.dlg.fileName.filePath()
+
+    def folder_output(self):
+        self.output = self.dlg.fileName_2.filePath()
 
     def linker(self):
 
@@ -245,7 +249,7 @@ class Photo_Link:
                     except:
                         QMessageBox(QMessageBox.Warning, "Ostrzeżenie:","Zdjęcia nie posiadają zapisanej lokalizacji, sprawdź, czy przed zrobieniem zdjęcia była włączona lokalizacja.").exec_()
                         break
-            if not len(coordinates_X) == 0:
+            if len(coordinates_X) != 0:
                 for x, y in zip(coordinates_X, coordinates_Y):
                     X_pop.append(x[0] + x[1] / 60 + x[2] / 3600)
                     Y_pop.append(y[0] + y[1] / 60 + y[2] / 3600)
@@ -338,25 +342,19 @@ class Photo_Link:
                 actionManager.setDefaultAction('Canvas', action.id())
                 # Zapisywanie warstwy do ścieżki lokalnej
                 if self.dlg.fileName_2.filePath() == "":
-                    self.iface.messageBar().pushSuccess("Sukces",
-                                                        "Warstwa z sukcesem została utworzona w pamięci")
-                elif not self.dlg.fileName_2.filePath().split(".")[-1]=="shp":
+                    QgsProject.instance().removeMapLayer(layer)
+                    self.iface.messageBar().pushSuccess("Sukces","Warstwa z sukcesem została utworzona w pamięci")
+
+                elif not self.output.split(".")[-1] in ["shp","gpkg"]:
                     QMessageBox(QMessageBox.Warning, "Ostrzeżenie:","Ścieżka niepoprawna. Sprawdź, czy ścieżka istnieje").exec_()
+
                 else:
-                    QgsVectorFileWriter.writeAsVectorFormat(result, self.output, "utf-8",driverName="ESRI Shapefile")
-                    project.instance().removeMapLayer(layer)
+                    transform_context = QgsProject.instance().transformContext()
+                    save_options = QgsVectorFileWriter.SaveVectorOptions()
+
+                    QgsVectorFileWriter.writeAsVectorFormatV2(result, self.output, transform_context, save_options)
+                    QgsProject.instance().removeMapLayer(layer)
                     self.iface.messageBar().pushSuccess("Sukces",
                                                         f"Obiekty z sukcesem zostały wyeksportowane do ścieżki: {self.output}")
             else:
                 pass
-
-    def folder_input(self):
-        self.input = self.dlg.fileName.filePath()
-
-    def folder_output(self):
-        self.output = self.dlg.fileName_2.filePath()
-
-
-    # self.package = "Exit"
-    # def install(self):
-    #     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
