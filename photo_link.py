@@ -38,6 +38,7 @@ from exif import Image
 import subprocess
 import sys
 import processing
+import pip
 
 class Photo_Link:
     """QGIS Plugin Implementation."""
@@ -196,8 +197,13 @@ class Photo_Link:
             self.first_start = False
             self.dlg = Photo_LinkDialog()
 
+        # check if exif is installed on computer
+
+        libraries = os.path.dirname(sys.executable).replace(os.path.dirname(sys.executable).split("\\")[-1],"\\apps\\Python39\\Lib\\site-packages")
+        if 'exif' not in [file for file in os.listdir(libraries)]:
+                subprocess.check_call(['python', '-m', 'pip', 'install', 'exif'])
+
         # show the dialog
-        subprocess.check_call(['python', '-m', 'pip', 'install', 'exif'])
         self.dlg.show()
         self.dlg.OK.clicked.connect(self.linker)
         self.dlg.fileName.fileChanged.connect(self.folder_input)
