@@ -232,16 +232,20 @@ class Photo_Link:
         sciezka = []
 
         if self.dlg.fileName.filePath() == "":
-            QMessageBox(QMessageBox.Warning, "Ostrzeżenie:","Nie wybrano żadnego folderu ze zdjęciami. Przed kontunuacją wybierz folder ze zdjęciami").exec_()
+            QMessageBox(QMessageBox.Warning, "Ostrzeżenie:","Nie wybrano żadnego folderu ze zdjęciami. Przed kontunuacją wybierz folder ze zdjęciami.").exec_()
 
         elif not os.path.isdir(self.dlg.fileName.filePath()):
             QMessageBox(QMessageBox.Warning, "Ostrzeżenie:",
-                        "Ścieżka niepoprawna. Sprawdź, czy ścieżka istnieje").exec_()
+                        "Ścieżka niepoprawna. Sprawdź, czy ścieżka istnieje.").exec_()
         else:
             w = os.listdir(self.input)
 
             for i in w:
-                lista.append((self.input + '\\' + i))
+                if i.split(".")[-1] in ["jpg","png"]:
+                    lista.append((self.input + '\\' + i))
+                else:
+                    QMessageBox(QMessageBox.Warning, "Ostrzeżenie:",
+                                f"Zdjęcie {i} nie zostało dodane z powodu nieprawidłowego formatu.").exec_()
 
             for i in lista:
                 with open(i, 'rb') as src:
@@ -352,7 +356,7 @@ class Photo_Link:
                     self.iface.messageBar().pushSuccess("Sukces","Warstwa z sukcesem została utworzona w pamięci")
 
                 elif not self.output.split(".")[-1] in ["shp","gpkg"]:
-                    QMessageBox(QMessageBox.Warning, "Ostrzeżenie:","Ścieżka niepoprawna. Sprawdź, czy ścieżka istnieje").exec_()
+                    QMessageBox(QMessageBox.Warning, "Ostrzeżenie:","Ścieżka niepoprawna. Sprawdź, czy ścieżka istnieje.").exec_()
 
                 else:
                     transform_context = QgsProject.instance().transformContext()
