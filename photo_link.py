@@ -34,10 +34,10 @@ from .resources import *
 from .photo_link_dialog import Photo_LinkDialog
 import os.path
 import os
-from exif import Image
 import subprocess
 import sys
 import processing
+import pip
 
 class Photo_Link:
     """QGIS Plugin Implementation."""
@@ -194,10 +194,14 @@ class Photo_Link:
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
         if self.first_start == True:
             self.first_start = False
-            self.dlg = Photo_LinkDialog()
+        self.dlg = Photo_LinkDialog()
 
+        # check if exif is installed on computer
+
+        libraries = os.path.dirname(sys.executable).replace(os.path.dirname(sys.executable).split("\\")[-1],"\\apps\\Python39\\Lib\\site-packages")
+        if 'exif' not in [file for file in os.listdir(libraries)]:
+            subprocess.check_call(['python', '-m', 'pip', 'install', 'exif'])
         # show the dialog
-        subprocess.check_call(['python', '-m', 'pip', 'install', 'exif'])
         self.dlg.show()
         self.dlg.OK.clicked.connect(self.linker)
         self.dlg.fileName.fileChanged.connect(self.folder_input)
@@ -210,6 +214,7 @@ class Photo_Link:
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
             pass
+        self.dlg.closeEvent = self.canceled
     def folder_input(self):
         self.input = self.dlg.fileName.filePath()
 
@@ -217,6 +222,7 @@ class Photo_Link:
         self.output = self.dlg.fileName_2.filePath()
 
     def linker(self):
+        from exif import Image
 
         lista = []
         coordinates_X = []
@@ -358,3 +364,8 @@ class Photo_Link:
                                                         f"Obiekty z sukcesem zostały wyeksportowane do ścieżki: {self.output}")
             else:
                 pass
+
+    def canceled(self):
+        if self.dlg.isCanceled():
+            self.input.clear()
+            self.output.clear()
