@@ -201,7 +201,7 @@ class Photo_Link:
 
         libraries = os.path.dirname(sys.executable).replace(os.path.dirname(sys.executable).split("\\")[-1],"\\apps\\Python39\\Lib\\site-packages")
         if 'exif' not in [file for file in os.listdir(libraries)]:
-                subprocess.check_call(['python', '-m', 'pip', 'install', 'exif'])
+            subprocess.check_call(['python', '-m', 'pip', 'install', 'exif'])
 
         # show the dialog
         self.dlg.show()
