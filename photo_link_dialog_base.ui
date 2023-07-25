@@ -176,7 +176,7 @@
       <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
        <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>SHP file location</string>
+         <string>Vector file location</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
