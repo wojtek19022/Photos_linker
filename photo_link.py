@@ -38,6 +38,7 @@ import subprocess
 import sys
 import processing
 import pip
+from exif import Image
 
 class Photo_Link:
     """QGIS Plugin Implementation."""
@@ -74,6 +75,13 @@ class Photo_Link:
         # Must be set in initGui() to survive plugin reloads
         self.first_start = None
         self.canvas = self.iface.mapCanvas()
+
+        # check if exif is installed on computer
+
+        libraries = os.path.dirname(sys.executable).replace(os.path.dirname(sys.executable).split("\\")[-1],
+                                                            "\\apps\\Python39\\Lib\\site-packages")
+        if 'exif' not in [file for file in os.listdir(libraries)]:
+            subprocess.check_call(['python', '-m', 'pip', 'install', 'exif'])
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -196,11 +204,6 @@ class Photo_Link:
             self.first_start = False
         self.dlg = Photo_LinkDialog()
 
-        # check if exif is installed on computer
-
-        libraries = os.path.dirname(sys.executable).replace(os.path.dirname(sys.executable).split("\\")[-1],"\\apps\\Python39\\Lib\\site-packages")
-        if 'exif' not in [file for file in os.listdir(libraries)]:
-            subprocess.check_call(['python', '-m', 'pip', 'install', 'exif'])
         # show the dialog
         self.dlg.show()
         self.dlg.OK.clicked.connect(self.linker)
@@ -222,7 +225,6 @@ class Photo_Link:
         self.output = self.dlg.fileName_2.filePath()
 
     def linker(self):
-        from exif import Image
 
         lista = []
         coordinates_X = []
