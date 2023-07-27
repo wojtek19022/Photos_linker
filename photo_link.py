@@ -38,7 +38,7 @@ import subprocess
 import sys
 import processing
 import pip
-from exif import Image
+
 
 class Photo_Link:
     """QGIS Plugin Implementation."""
@@ -80,6 +80,7 @@ class Photo_Link:
 
         libraries = os.path.dirname(sys.executable).replace(os.path.dirname(sys.executable).split("\\")[-1],
                                                             "\\apps\\Python39\\Lib\\site-packages")
+        print(libraries)
         if 'exif' not in [file for file in os.listdir(libraries)]:
             subprocess.check_call(['python', '-m', 'pip', 'install', 'exif'])
 
@@ -197,7 +198,7 @@ class Photo_Link:
 
     def run(self):
         """Run method that performs all the real work"""
-
+        from exif import Image
         # Create the dialog with elements (after translation) and keep reference
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
         if self.first_start == True:
@@ -225,7 +226,7 @@ class Photo_Link:
         self.output = self.dlg.fileName_2.filePath()
 
     def linker(self):
-
+        from exif import Image
         lista = []
         coordinates_X = []
         coordinates_Y = []
