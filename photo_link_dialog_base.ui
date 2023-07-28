@@ -108,7 +108,7 @@
       <item alignment="Qt::AlignHCenter">
        <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>Version: 0.3</string>
+         <string>Version: 0.5</string>
         </property>
        </widget>
       </item>
@@ -176,7 +176,7 @@
       <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
        <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>SHP file location</string>
+         <string>Vector files localizations</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
