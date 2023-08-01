@@ -38,7 +38,7 @@ import subprocess
 import sys
 import processing
 import pip
-from exif import Image
+
 
 class Photo_Link:
     """QGIS Plugin Implementation."""
@@ -80,6 +80,7 @@ class Photo_Link:
 
         libraries = os.path.dirname(sys.executable).replace(os.path.dirname(sys.executable).split("\\")[-1],
                                                             "\\apps\\Python39\\Lib\\site-packages")
+        print(libraries)
         if 'exif' not in [file for file in os.listdir(libraries)]:
             subprocess.check_call(['python', '-m', 'pip', 'install', 'exif'])
 
@@ -185,6 +186,7 @@ class Photo_Link:
 
         # will be set False in run()
         self.first_start = True
+        self.dlg = Photo_LinkDialog()
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
@@ -197,12 +199,11 @@ class Photo_Link:
 
     def run(self):
         """Run method that performs all the real work"""
-
+        from exif import Image
         # Create the dialog with elements (after translation) and keep reference
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
         if self.first_start == True:
             self.first_start = False
-        self.dlg = Photo_LinkDialog()
 
         # show the dialog
         self.dlg.show()
@@ -225,13 +226,18 @@ class Photo_Link:
         self.output = self.dlg.fileName_2.filePath()
 
     def linker(self):
-
+        from exif import Image
         lista = []
         coordinates_X = []
         coordinates_Y = []
+        has_GPS = []
         X_pop = []
         Y_pop = []
         sciezka = []
+        azimuths = []
+        dates = []
+        liczba = []
+
 
         if self.dlg.fileName.filePath() == "":
             QMessageBox(QMessageBox.Warning, "Ostrzeżenie:","Nie wybrano żadnego folderu ze zdjęciami. Przed kontunuacją wybierz folder ze zdjęciami.").exec_()
@@ -243,7 +249,8 @@ class Photo_Link:
             w = os.listdir(self.input)
 
             for i in w:
-                if i.split(".")[-1] in ["jpg","png"]:
+                if i.split(".")[-1].lower() in ["jpg","png","jpeg"]:
+                    print(i)#.split(".")[-1].lower())
                     lista.append((self.input + '\\' + i))
                 else:
                     QMessageBox(QMessageBox.Warning, "Ostrzeżenie:",
@@ -252,15 +259,44 @@ class Photo_Link:
             for i in lista:
                 with open(i, 'rb') as src:
                     img = Image(src)
+                    print(len([x for x in w]))
                     try:
-                        X = img.gps_longitude
-                        Y = img.gps_latitude
+                        if img.gps_longitude or img.gps_latitude:
+                            liczba.append(i)
+                            print(len(liczba))
+                            has_GPS.append(i)
+                            if img.gps_longitude_ref=="W":
+                                X = img.gps_longitude*(-1)
+                            else:
+                                X = img.gps_longitude
+                            coordinates_X.append(X)
 
-                        coordinates_X.append(X)
-                        coordinates_Y.append(Y)
+                            if img.gps_latitude_ref == "S":
+                                Y = img.gps_latitude*(-1)
+                            else:
+                                Y = img.gps_latitude
+                            coordinates_Y.append(Y)
+
+                            dates.append(img.datetime)
+                            # print(i)#, X, Y)
+                            try:
+                                if img.gps_img_direction:
+                                    azimuth = float(img.gps_img_direction)
+                                    azimuths.append(azimuth)
+                                    # print("Azymut: ",float(img.gps_img_direction))
+
+                            except:
+                                azimuths.append(-999)
+                                pass
+                        elif not img.gps_longitude:
+                            # lista.remove(i)
+                            pass
                     except:
-                        QMessageBox(QMessageBox.Warning, "Ostrzeżenie:","Zdjęcia nie posiadają zapisanej lokalizacji, sprawdź, czy przed zrobieniem zdjęcia była włączona lokalizacja.").exec_()
-                        break
+                        # lista.remove(i)
+                        QMessageBox(QMessageBox.Warning, "Ostrzeżenie:",
+                                    f"Zdjęcie {i} nie posiada zapisanej lokalizacji, sprawdź, czy przed zrobieniem zdjęcia była włączona lokalizacja.").exec_()
+                        pass
+
             if len(coordinates_X) != 0:
                 for x, y in zip(coordinates_X, coordinates_Y):
                     X_pop.append(x[0] + x[1] / 60 + x[2] / 3600)
@@ -286,7 +322,10 @@ class Photo_Link:
                 layer = QgsVectorLayer(uri, "Zdjęcia", "Memory")
                 project.addMapLayer(layer)
                 pr = layer.dataProvider()  # need to create a data provider
-                pr.addAttributes([QgsField("Path", QVariant.String)])
+                pr.addAttributes([QgsField("path", QVariant.String)])
+                pr.addAttributes([QgsField("azimuth", QVariant.Double)])
+                pr.addAttributes([QgsField("lenght", QVariant.Double)])
+                pr.addAttributes([QgsField("datetime", QVariant.String, len=30)])
                 layer.updateFields()
 
                 # Edycja symboliki warstwy
@@ -294,78 +333,65 @@ class Photo_Link:
                 single_symbol_renderer = layer.renderer()
                 symbol = single_symbol_renderer.symbol()
 
-                # Set fill colour
-                symbol.setColor(QColor.fromRgb(255, 255, 255))
-                # Set size of point feature
-                symbol.setSize(2)
-                # Set fill style
-                # symbol.symbolLayer(0).setBrushStyle()
-                # Set stroke colour
-                symbol.symbolLayer(0).setStrokeColor(QColor(0, 0, 0))
+                styl = os.path.join(self.plugin_dir,"Styl/Styl_punkty.qml")
+                layer.loadNamedStyle(styl)
 
-                for r in zip(lista, X_pop, Y_pop):
+                for r in zip(has_GPS, X_pop, Y_pop,azimuths,dates):
+                    print(r)
                     sciezka.append(r[0])
                     f = QgsFeature(layer.fields())
 
                     f["lon"] = float(r[1])
                     f["lat"] = float(r[2])
-                    f["Path"] = str(r[0])
+                    f["path"] = str(r[0])
+                    f["azimuth"] = float(r[3])
+                    f["lenght"] = float(3)
+                    f["datetime"] = str(r[4])
 
                     geom = QgsGeometry.fromPointXY(QgsPointXY(r[1], r[2]))
                     f.setGeometry(geom)
                     layer.dataProvider().addFeatures([f])
                     layer.updateFields()
 
-                ### Zmienianie układu WGS 84 na PL-1992
-                crs = QgsCoordinateReferenceSystem("EPSG:2180")
-                project.setCrs(crs)
-                parameter = {
-                    'INPUT': layer,
-                    'TARGET_CRS': 'EPSG:2180',
-                    'OUTPUT': 'memory:Reprojected'
-                }
-                result = processing.run('native:reprojectlayer', parameter)['OUTPUT']
-                project.instance().addMapLayer(result)
-
-                result.startEditing()
-                for r in result.getFeatures():
-                    f = QgsFeature(layer.fields())
-                    point = r.geometry().asPoint()
-
-                    result.changeAttributeValue(r.id(),0,float(point.x()))
-                    result.changeAttributeValue(r.id(),1,float(point.y()))
-                    result.updateExtents()
-
-                result.commitChanges()
-
                 # Function zooms to extent of a layer
-                self.canvas.setExtent(result.extent())
+                self.canvas.setExtent(layer.extent())
                 self.canvas.refresh()
 
+                # # add action to open linked document
+                # action = QgsAction(QgsAction.OpenUrl, 'Open file', '[% "full_path" %]')
+                # my_scopes = {'Field', 'Canvas', 'Form', 'Field', 'Layer', 'Feature'}
+                # action.setActionScopes(my_scopes)
+                #
+                # actionManager = new_sublayer.actions()
+                # actionManager.addAction(action)
+                #
+                # # The only line added from your answer
+                # actionManager.setDefaultAction('Canvas', action.id())
+
+
                 # add action to open linked document
-                action = QgsAction(QgsAction.OpenUrl, 'Open file', '[% "Path" %]')
-                my_scopes = {'Field', 'Canvas', 'Field', 'Feature'}
+                action = QgsAction(QgsAction.OpenUrl, 'Open file', '[% "path" %]')
+                my_scopes = {'Field', 'Canvas', 'Form', 'Field', 'Layer', 'Feature'}
                 action.setActionScopes(my_scopes)
 
-                actionManager = result.actions()
+                actionManager = layer.actions()
                 actionManager.addAction(action)
 
                 # The only line added from your answer
                 actionManager.setDefaultAction('Canvas', action.id())
                 # Zapisywanie warstwy do ścieżki lokalnej
                 if self.dlg.fileName_2.filePath() == "":
-                    QgsProject.instance().removeMapLayer(layer)
                     self.iface.messageBar().pushSuccess("Sukces","Warstwa z sukcesem została utworzona w pamięci")
 
                 elif not self.output.split(".")[-1] in ["shp","gpkg"]:
+
                     QMessageBox(QMessageBox.Warning, "Ostrzeżenie:","Ścieżka niepoprawna. Sprawdź, czy ścieżka istnieje.").exec_()
 
                 else:
                     transform_context = QgsProject.instance().transformContext()
                     save_options = QgsVectorFileWriter.SaveVectorOptions()
 
-                    QgsVectorFileWriter.writeAsVectorFormatV2(result, self.output, transform_context, save_options)
-                    QgsProject.instance().removeMapLayer(layer)
+                    QgsVectorFileWriter.writeAsVectorFormatV2(layer, self.output, transform_context, save_options)
                     self.iface.messageBar().pushSuccess("Sukces",
                                                         f"Obiekty z sukcesem zostały wyeksportowane do ścieżki: {self.output}")
             else:

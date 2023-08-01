@@ -108,7 +108,7 @@
       <item alignment="Qt::AlignHCenter">
        <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>Version: 0.4</string>
+         <string>Version: 0.6</string>
         </property>
        </widget>
       </item>
