@@ -6,7 +6,7 @@
 name=Photo linker
 qgisMinimumVersion=3.22
 description=That is a plugin to link photos with points in vector file
-version=0.6
+version=0.7
 author=Wojciech Sołyga
 email=wojciech.solyga2@gmail.com
 
@@ -21,6 +21,9 @@ repository=https://github.com/wojtek19022/Photos-linker
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
 changelog=
+	In version 0.7:
+	- Deleted plugin multiple functions execution
+	- Added paths clearing for input and output
 	In version 0.6:
 	- Added datetime to every generated picture
 	- Modified generation of notifications
