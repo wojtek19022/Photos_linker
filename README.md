@@ -1,4 +1,4 @@
-# Photos_linker
+# Photos linker
 That is a tool for creating points from locations where picture was taken and make user avaliable to click on this picture.
 
 Plugin workflow:
