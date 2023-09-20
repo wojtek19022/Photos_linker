@@ -7,6 +7,6 @@ Plugin workflow:
 - if photo doesn't have metadata, user will be notified about it,
 - user can select whether want to create an Shapefile or Geopackage in selected location or add it to a project layers in memory.
 
-Output data is projected in polish geographic coordinate system - PL-1992. If in picture is saved and information about picture direction, it will be shown by arrow. If not, in the picture location will be a point.
+Output data is projected in world geographic coordinate system - WGS-84. If in picture is saved and information about picture direction, it will be shown by arrow. If not, in the picture location will be a point.
 
 Also in the pictures localizations, every signle picture that has metadata, is assigned its' time when the picture had been captured.
