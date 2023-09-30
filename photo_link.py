@@ -179,6 +179,8 @@ class Photo_Link:
         self.first_start = True
         self.dlg = Photo_LinkDialog()
 
+
+
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -194,12 +196,20 @@ class Photo_Link:
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
         if self.first_start == True:
             self.first_start = False
+            self.dlg = Photo_LinkDialog()
+
+            self.dlg.OK.clicked.connect(self.linker)
+            self.dlg.fileName.fileChanged.connect(self.folder_input)
+            self.dlg.fileName_2.fileChanged.connect(self.folder_output)
+        # else:
+        #     try:
+        #         self.dlg.Cancel.clicked.disconnect(self.linker)
+        #     except TypeError:
+        #         # Already disconnected
+        #         pass
 
         # show the dialog
         self.dlg.show()
-        self.dlg.OK.clicked.connect(self.linker)
-        self.dlg.fileName.fileChanged.connect(self.folder_input)
-        self.dlg.fileName_2.fileChanged.connect(self.folder_output)
 
         self.dlg.closeEvent = self.close
         # Run the dialog event loop
@@ -340,6 +350,7 @@ class Photo_Link:
                         layer.updateFields()
 
                     # Function zooms to extent of a layer
+                    print(layer.extent())
                     self.canvas.setExtent(layer.extent())
                     self.canvas.refresh()
 
@@ -382,6 +393,8 @@ class Photo_Link:
                 azimuths.clear()
                 dates.clear()
                 liczba.clear()
+
+
 
     def close(self,event):
         self.dlg.fileName.setFilePath('')
