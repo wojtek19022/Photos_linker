@@ -365,6 +365,8 @@ class Photo_Link:
                     # The only line added from your answer
                     actionManager.setDefaultAction('Canvas', action.id())
 
+                    # Nadanie nowego układu współrzędnych tak, aby były dane lepiej widoczne
+                    self.project.setCrs(QgsCoordinateReferenceSystem("EPSG:3857"))
                     # Zapisywanie warstwy do ścieżki lokalnej
                     if self.dlg.fileName_2.filePath() == "":
                         self.iface.messageBar().pushSuccess("Sukces","Warstwa z sukcesem została utworzona w pamięci")
