@@ -11,5 +11,5 @@ Output data is projected in world geographic coordinate system - WGS-84. If in p
 
 Also in the pictures localizations, every signle picture that has metadata, is assigned its' time when the picture had been captured.
 
-<p align = "center">Created by <strong>Wojciech Sołyga</strong> in Python.</p><br>
+<p align = "center">Created by <strong>Wojciech Sołyga</strong> in Python.</p>
 <p align = "center">Last updated: <strong>14.10.2023 r.</strong></p>
