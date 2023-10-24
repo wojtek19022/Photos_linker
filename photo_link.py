@@ -16,6 +16,7 @@ from qgis.PyQt.QtGui import QIcon, QColor, QBrush
 from qgis.PyQt.QtWidgets import QAction, QPushButton, QMessageBox, QLineEdit
 from qgis.core import (QgsVectorLayer, QgsProject, QgsField, QgsFeature, QgsGeometry, QgsPointXY, QgsVectorFileWriter, QgsRasterLayer,
                        QgsCoordinateReferenceSystem, QgsAction)
+from qgis.gui import Qgis
 
 
 # Initialize Qt resources from file resources.py
@@ -205,9 +206,8 @@ class Photo_Link:
         # show the dialog
         self.dlg.show()
 
-        self.dlg.closeEvent = self.close
         # Run the dialog event loop
-        # result = self.dlg.exec_()
+        self.dlg.exec_()
 
     def folder_input(self):
         self.input = self.dlg.fileName.filePath()
@@ -249,27 +249,29 @@ class Photo_Link:
 
                 for i in lista:
                     with open(i, 'rb') as src:
+                        print("Wyświetlono: ",i)
                         img = Image(src)
                         print(len([x for x in w]))
                         try:
-                            if img.gps_longitude or img.gps_latitude:
+                            if img.gps_longitude and img.gps_latitude:
                                 liczba.append(i)
                                 print(len(liczba))
                                 has_GPS.append(i)
                                 if img.gps_longitude_ref=="W":
-                                    X = img.gps_longitude*(-1)
-                                else:
+                                    X = (img.gps_longitude[0]*-1,img.gps_longitude[1]*-1,img.gps_longitude[2]*-1)
+                                elif img.gps_longitude_ref == "E":
                                     X = img.gps_longitude
                                 coordinates_X.append(X)
 
                                 if img.gps_latitude_ref == "S":
+                                    X = (img.gps_latitude[0] * -1, img.gps_latitude[1] * -1, img.gps_latitude[2] * -1)
                                     Y = img.gps_latitude*(-1)
-                                else:
+                                elif img.gps_latitude_ref == "N":
                                     Y = img.gps_latitude
                                 coordinates_Y.append(Y)
 
                                 dates.append(img.datetime)
-                                # print(i)#, X, Y)
+                                print( X, Y)
                                 try:
                                     if img.gps_img_direction:
                                         azimuth = float(img.gps_img_direction)
@@ -287,9 +289,11 @@ class Photo_Link:
                             QMessageBox(QMessageBox.Warning, "Ostrzeżenie:",
                                         f"Zdjęcie {i} nie posiada zapisanej lokalizacji, sprawdź, czy przed zrobieniem zdjęcia była włączona lokalizacja.").exec_()
                             pass
+                print(coordinates_X,"Długosć listy X",len(coordinates_Y),"Długość listy Y")
+                if len(coordinates_X) > 0 or len(coordinates_Y) > 0:
 
-                if len(coordinates_X) != 0:
                     for x, y in zip(coordinates_X, coordinates_Y):
+                        print(x, y)
                         X_pop.append(x[0] + x[1] / 60 + x[2] / 3600)
                         Y_pop.append(y[0] + y[1] / 60 + y[2] / 3600)
 
@@ -349,8 +353,13 @@ class Photo_Link:
                     self.canvas.refresh()
 
                     # add action to open linked document
-                    action = QgsAction(QgsAction.OpenUrl, 'Open file', '[% "Path" %]')
-                    my_scopes = {'Layer', 'Canvas', 'Field', 'Feature'}
+
+                    if Qgis.QGIS_VERSION_INT >=32800:
+                        action = QgsAction(QgsAction.OpenUrl, 'Open file', '[% "path" %]')
+                        my_scopes = {'Field', 'Canvas', 'Form', 'Field', 'Layer', 'Feature'}
+                    else:
+                        action = QgsAction(QgsAction.OpenUrl, 'Open file', '[%"path"%]')
+                        my_scopes = {'Layer', 'Canvas', 'Field', 'Feature'}
                     action.setActionScopes(my_scopes)
 
                     actionManager = layer.actions()
@@ -358,9 +367,9 @@ class Photo_Link:
 
                     # The only line added from your answer
                     actionManager.setDefaultAction('Canvas', action.id())
-                    action.trigger()
+                    self.iface.mapCanvas().refreshAllLayers()
 
-                    # Nadanie nowego układu współrzędnych tak, aby były dane lepiej widoczne
+                    # # Nadanie nowego układu współrzędnych tak, aby były dane lepiej widoczne
                     self.project.setCrs(QgsCoordinateReferenceSystem("EPSG:3857"))
                     # Zapisywanie warstwy do ścieżki lokalnej
                     if self.dlg.fileName_2.filePath() == "":
@@ -393,6 +402,6 @@ class Photo_Link:
 
 
 
-    def close(self,event):
+    def onClosePlugin(self):
         self.dlg.fileName.setFilePath('')
         self.dlg.fileName_2.setFilePath('')
