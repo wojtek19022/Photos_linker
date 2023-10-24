@@ -12,8 +12,8 @@ email=wojciech.solyga2@gmail.com
 
 about=That is a plugin that generates point features that cointain photos X,Y and path to a photo
 
-tracker=https://github.com/wojtek19022/Photos-linker/issues
-repository=https://github.com/wojtek19022/Photos-linker
+tracker=https://github.com/wojtek19022/Photos_linker/issues
+repository=https://github.com/wojtek19022/Photos_linker
 # End of mandatory metadata
 
 # Recommended items:

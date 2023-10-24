@@ -201,12 +201,6 @@ class Photo_Link:
             self.dlg.OK.clicked.connect(self.linker)
             self.dlg.fileName.fileChanged.connect(self.folder_input)
             self.dlg.fileName_2.fileChanged.connect(self.folder_output)
-        # else:
-        #     try:
-        #         self.dlg.Cancel.clicked.disconnect(self.linker)
-        #     except TypeError:
-        #         # Already disconnected
-        #         pass
 
         # show the dialog
         self.dlg.show()
@@ -355,8 +349,8 @@ class Photo_Link:
                     self.canvas.refresh()
 
                     # add action to open linked document
-                    action = QgsAction(QgsAction.OpenUrl, 'Open file', '[% "path" %]')
-                    my_scopes = {'Field', 'Canvas', 'Form', 'Field', 'Layer', 'Feature'}
+                    action = QgsAction(QgsAction.OpenUrl, 'Open file', '[% "Path" %]')
+                    my_scopes = {'Layer', 'Canvas', 'Field', 'Feature'}
                     action.setActionScopes(my_scopes)
 
                     actionManager = layer.actions()
@@ -364,6 +358,7 @@ class Photo_Link:
 
                     # The only line added from your answer
                     actionManager.setDefaultAction('Canvas', action.id())
+                    action.trigger()
 
                     # Nadanie nowego układu współrzędnych tak, aby były dane lepiej widoczne
                     self.project.setCrs(QgsCoordinateReferenceSystem("EPSG:3857"))
