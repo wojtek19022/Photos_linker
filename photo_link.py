@@ -397,7 +397,7 @@ class Photo_Link:
             actionManager.addAction(action)
 
             # The only line added from your answer
-            actionManager.setDefaultAction('File opener', action.id())
+            actionManager.setDefaultAction('Open file', action.id())
             self.canvas.refresh()
 
             # Zapisywanie warstwy do ścieżki lokalnej
