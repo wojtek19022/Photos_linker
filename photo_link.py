@@ -278,7 +278,7 @@ class Photo_Link:
                 w = os.listdir(self.input)
 
                 for i in w:
-                    if i.split(".")[-1].lower() in ["jpg","png","jpeg"]:
+                    if i.lower().endswith(".jpg") or i.lower().endswith(".png") or i.lower().endswith(".jpeg"):
                         print(i)#.split(".")[-1].lower())
                         lista.append((self.input + '\\' + i))
                     else:
@@ -404,7 +404,7 @@ class Photo_Link:
             if self.dlg.fileName_2.filePath() == "":
                 self.iface.messageBar().pushSuccess("Sukces", "Warstwa z sukcesem została utworzona w pamięci")
 
-            elif not self.output.split(".")[-1] in ["shp", "gpkg"]:
+            elif not self.output.endswith(".shp") or self.output.endswith(".gpkg"):
 
                 QMessageBox(QMessageBox.Warning, "Ostrzeżenie:",
                             "Ścieżka niepoprawna. Sprawdź, czy ścieżka istnieje.").exec_()
