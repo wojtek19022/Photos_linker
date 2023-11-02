@@ -13,4 +13,4 @@ If user doesn't select any direction to save data, points with pictures location
 Also in the pictures localizations, every signle picture that has metadata, is assigned its' time when the picture had been captured.
 
 <p align = "center">Created by <strong>Wojciech Sołyga</strong> in Python.</p>
-<p align = "center">Last updated: <strong>30.09.2023 r.</strong></p>
+<p align = "center">Last updated: <strong>2.11.2023 r.</strong></p>
