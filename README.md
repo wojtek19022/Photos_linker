@@ -1,4 +1,4 @@
-# Photo linker
+# Photos linker
 That is a tool for creating points from locations where picture was taken and make user avaliable to click on this picture.
 
 Plugin workflow:
@@ -8,6 +8,7 @@ Plugin workflow:
 - user can select whether want to create an Shapefile or Geopackage in selected location or add it to a project layers in memory.
 
 Output data is projected in world geographic coordinate system - WGS-84. If in picture is saved and information about picture direction, it will be shown by arrow. If not, in the picture location will be a point.
+If user doesn't select any direction to save data, points with pictures locations will be projected in WEB WGS-84.
 
 Also in the pictures localizations, every signle picture that has metadata, is assigned its' time when the picture had been captured.
 
