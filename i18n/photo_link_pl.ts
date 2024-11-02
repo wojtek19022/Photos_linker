@@ -48,7 +48,7 @@
     </message>
     <message>
         <location filename="../photo_link_dialog_base.ui" line="192"/>
-        <source>Shapefile (*.shp), Geopackage (*.gpkg)</source>
+        <source>Shapefile (*.shp);;Geopackage (*.gpkg)</source>
         <translation></translation>
     </message>
     <message>
