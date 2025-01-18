@@ -6,7 +6,7 @@
 name=Photo linker
 qgisMinimumVersion=3.22
 description=That is a plugin to link photos with points in vector file
-version=0.8
+version=0.8.0
 author=Wojciech Sołyga
 email=wojciech.solyga2@gmail.com
 
