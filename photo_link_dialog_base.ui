@@ -169,6 +169,9 @@
         <property name="accessibleName">
          <string notr="true"/>
         </property>
+        <property name="dialogTitle">
+         <string>Wybierz ścieżkę</string>
+        </property>
         <property name="storageMode">
          <enum>QgsFileWidget::GetDirectory</enum>
         </property>

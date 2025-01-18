@@ -271,13 +271,20 @@ class Photo_Link:
         dates = []
         liczba = []
 
-
         if self.dlg.fileName.filePath() == "":
-            QMessageBox(QMessageBox.Warning, "Ostrzeżenie:","Nie wybrano żadnego folderu ze zdjęciami. Przed kontunuacją wybierz folder ze zdjęciami.").exec_()
+            QMessageBox(
+                QMessageBox.Warning, 
+                "Ostrzeżenie:",
+                "Nie wybrano żadnego folderu ze zdjęciami. Przed kontunuacją wybierz folder ze zdjęciami."
+            ).exec_()
+        
+        elif os.path.isdir(self.dlg.fileName.filePath()) is False:
+            QMessageBox(
+                QMessageBox.Warning, 
+                "Ostrzeżenie:",
+                "Ścieżka niepoprawna. Sprawdź, czy ścieżka istnieje."
+            ).exec_()
 
-        elif not os.path.isdir(self.dlg.fileName.filePath()):
-            QMessageBox(QMessageBox.Warning, "Ostrzeżenie:",
-                        "Ścieżka niepoprawna. Sprawdź, czy ścieżka istnieje.").exec_()
         else:
 
             self.addBaseLayers()
@@ -290,8 +297,11 @@ class Photo_Link:
                         print(i)#.split(".")[-1].lower())
                         lista.append((self.input + '\\' + i))
                     else:
-                        QMessageBox(QMessageBox.Warning, "Ostrzeżenie:",
-                                    f"Zdjęcie {i} nie zostało dodane z powodu nieprawidłowego formatu.").exec_()
+                        QMessageBox(
+                            QMessageBox.Warning,
+                            "Ostrzeżenie:",
+                            f"Zdjęcie {i} nie zostało dodane z powodu nieprawidłowego formatu."
+                        ).exec_()
 
                 for i in lista:
                     with open(i, 'rb') as src:
@@ -332,8 +342,11 @@ class Photo_Link:
                                 pass
                         except:
                             # lista.remove(i)
-                            QMessageBox(QMessageBox.Warning, "Ostrzeżenie:",
-                                        f"Zdjęcie {i} nie posiada zapisanej lokalizacji, sprawdź, czy przed zrobieniem zdjęcia była włączona lokalizacja.").exec_()
+                            QMessageBox(
+                                QMessageBox.Warning,
+                                "Ostrzeżenie:",
+                                f"Zdjęcie {i} nie posiada zapisanej lokalizacji, sprawdź, czy przed zrobieniem zdjęcia była włączona lokalizacja."
+                            ).exec_()
                             pass
                 print(coordinates_X,"Długosć listy X",len(coordinates_Y),"Długość listy Y")
                 if len(coordinates_X) > 0 or len(coordinates_Y) > 0:
@@ -342,8 +355,6 @@ class Photo_Link:
                         print(x, y)
                         X_pop.append(x[0] + x[1] / 60 + x[2] / 3600)
                         Y_pop.append(y[0] + y[1] / 60 + y[2] / 3600)
-
-
 
             except:
                 lista.clear()
@@ -410,20 +421,32 @@ class Photo_Link:
 
             # Zapisywanie warstwy do ścieżki lokalnej
             if self.dlg.fileName_2.filePath() == "":
-                self.iface.messageBar().pushSuccess("Sukces", "Warstwa z sukcesem została utworzona w pamięci")
+                self.iface.messageBar().pushSuccess(
+                    "Sukces",
+                    "Warstwa z sukcesem została utworzona w pamięci"
+                )
 
-            elif not self.output.endswith(".shp") or self.output.endswith(".gpkg"):
-
-                QMessageBox(QMessageBox.Warning, "Ostrzeżenie:",
-                            "Ścieżka niepoprawna. Sprawdź, czy ścieżka istnieje.").exec_()
+            elif self.dlg.fileName_2.filePath().endswith(".shp") is False and self.dlg.fileName_2.filePath().endswith(".gpkg") is False:
+                QMessageBox(
+                    QMessageBox.Warning,
+                    "Ostrzeżenie:",
+                    "Ścieżka niepoprawna. Sprawdź, czy ścieżka istnieje."
+                ).exec_()
 
             else:
                 transform_context = self.project.transformContext()
                 save_options = QgsVectorFileWriter.SaveVectorOptions()
 
-                QgsVectorFileWriter.writeAsVectorFormatV2(layer, self.output, transform_context, save_options)
-                self.iface.messageBar().pushSuccess("Sukces",
-                                                    f"Obiekty z sukcesem zostały wyeksportowane do ścieżki: {self.output}")
+                QgsVectorFileWriter.writeAsVectorFormatV2(
+                    layer,
+                    self.output,
+                    transform_context,
+                    save_options
+                )
+                self.iface.messageBar().pushSuccess(
+                    "Sukces",
+                    f"Obiekty z sukcesem zostały wyeksportowane do ścieżki: {self.output}"
+                )
 
             self.canvas.setExtent(layer.extent())
             self.canvas.refresh()
