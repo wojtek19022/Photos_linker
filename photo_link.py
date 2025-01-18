@@ -7,7 +7,7 @@
                               -------------------
         begin                : 2023-05-13
         git sha              : $Format:%H$
-        copyright            : (C) 2023 by Wojciech Sołyga
+        copyright            : (C) 2025 by Wojciech Sołyga
         email                : wojciech.solyga2@gmail.com
 
 ***************************************************************************/"""
@@ -31,6 +31,9 @@ import subprocess
 import sys
 import processing
 import pip
+
+# plugin modules
+from .modules import extract_params_from_metadata
 
 
 class Photo_Link:
@@ -69,6 +72,9 @@ class Photo_Link:
         self.first_start = None
         self.project = QgsProject.instance()
         self.canvas = self.iface.mapCanvas()
+        self.plugin_name = ""
+        self.plugin_version = ""
+        self.metadata_dir = os.path.join(self.plugin_dir, 'metadata.txt')
 
         # check if exif is installed on computer
 
@@ -180,8 +186,10 @@ class Photo_Link:
         # will be set False in run()
         self.first_start = True
         self.dlg = Photo_LinkDialog()
-
-
+        self.metadata = extract_params_from_metadata.open_metadata_file(self.metadata_dir)
+        self.plugin_name = self.metadata.get("name")
+        self.plugin_version = self.metadata.get("version")
+        self.dlg.version.setText(self.plugin_version)
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
@@ -196,9 +204,9 @@ class Photo_Link:
         from exif import Image
         # Create the dialog with elements (after translation) and keep reference
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
+
         if self.first_start == True:
             self.first_start = False
-            self.dlg = Photo_LinkDialog()
 
             self.dlg.OK.clicked.connect(self.linker)
             self.dlg.fileName.fileChanged.connect(self.folder_input)
@@ -421,6 +429,7 @@ class Photo_Link:
             self.canvas.refresh()
 
             self.setNewCrs()
+
     def onClosePlugin(self):
         self.dlg.fileName.setFilePath('')
         self.dlg.fileName_2.setFilePath('')
