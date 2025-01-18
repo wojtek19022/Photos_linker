@@ -6,7 +6,7 @@
 name=Photo linker
 qgisMinimumVersion=3.22
 description=That is a plugin to link photos with points in vector file
-version=0.7
+version=0.8
 author=Wojciech Sołyga
 email=wojciech.solyga2@gmail.com
 
@@ -21,25 +21,28 @@ repository=https://github.com/wojtek19022/Photos_linker
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
 changelog=
-	In version 0.7:
-	- Deleted plugin multiple functions execution
-	- Added paths clearing for input and output
-	In version 0.6:
-	- Added datetime to every generated picture
-	- Modified generation of notifications
-	- Modification of actions assignment to execute them globally
-	In version 0.5:
-	- Modified calculation of CRS for places on the Western and Southern sites of Earth
-	- Added presentation of pictures direction
-	In version 0.4:
-	- Repared installing and uninstalling exif library
-	- Change of plugin's interface language to EN
-	- Added clearing of plugin fields from previous data
-	In version 0.3:
-	- Added possibility to save file to geopackage
-	- Fixed adding only layer in memory if directory to save isn't loaded
-	- UI file changed
-	- Added plugin icon in a QGIS bar
+	In version 0.7.1:
+	- Fixed notiffications bad display
+	- Added automatic read of plugin name and version from metadata
+#	In version 0.7:
+#	- Deleted plugin multiple functions execution
+#	- Added paths clearing for input and output
+#	In version 0.6:
+#	- Added datetime to every generated picture
+#	- Modified generation of notifications
+#	- Modification of actions assignment to execute them globally
+#	In version 0.5:
+#	- Modified calculation of CRS for places on the Western and Southern sites of Earth
+#	- Added presentation of pictures direction
+#	In version 0.4:
+#	- Repared installing and uninstalling exif library
+#	- Change of plugin's interface language to EN
+#	- Added clearing of plugin fields from previous data
+#	In version 0.3:
+#	- Added possibility to save file to geopackage
+#	- Fixed adding only layer in memory if directory to save isn't loaded
+#	- UI file changed
+#	- Added plugin icon in a QGIS bar
 
 # Tags are comma separated with spaces allowed
 tags=python,shapefile, geopackage,photos,pyqgis
