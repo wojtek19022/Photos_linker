@@ -21,7 +21,8 @@ repository=https://github.com/wojtek19022/Photos_linker
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
 changelog=
-	In version 0.7.1:
+	In version 0.8:
+	- Fixed alphabetical errors in readme
 	- Fixed notiffications bad display
 	- Added automatic read of plugin name and version from metadata
 #	In version 0.7:
