@@ -7,7 +7,7 @@
                               -------------------
         begin                : 2023-05-13
         git sha              : $Format:%H$
-        copyright            : (C) 2023 by Wojciech Sołyga
+        copyright            : (C) 2025 by Wojciech Sołyga
         email                : wojciech.solyga2@gmail.com
 
 ***************************************************************************/"""
@@ -31,6 +31,9 @@ import subprocess
 import sys
 import processing
 import pip
+
+# plugin modules
+from .modules import extract_params_from_metadata
 
 
 class Photo_Link:
@@ -69,6 +72,9 @@ class Photo_Link:
         self.first_start = None
         self.project = QgsProject.instance()
         self.canvas = self.iface.mapCanvas()
+        self.plugin_name = ""
+        self.plugin_version = ""
+        self.metadata_dir = os.path.join(self.plugin_dir, 'metadata.txt')
 
         # check if exif is installed on computer
 
@@ -180,8 +186,10 @@ class Photo_Link:
         # will be set False in run()
         self.first_start = True
         self.dlg = Photo_LinkDialog()
-
-
+        self.metadata = extract_params_from_metadata.open_metadata_file(self.metadata_dir)
+        self.plugin_name = self.metadata.get("name")
+        self.plugin_version = self.metadata.get("version")
+        self.dlg.version.setText(self.plugin_version)
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
@@ -196,9 +204,9 @@ class Photo_Link:
         from exif import Image
         # Create the dialog with elements (after translation) and keep reference
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
+
         if self.first_start == True:
             self.first_start = False
-            self.dlg = Photo_LinkDialog()
 
             self.dlg.OK.clicked.connect(self.linker)
             self.dlg.fileName.fileChanged.connect(self.folder_input)
@@ -263,13 +271,20 @@ class Photo_Link:
         dates = []
         liczba = []
 
-
         if self.dlg.fileName.filePath() == "":
-            QMessageBox(QMessageBox.Warning, "Ostrzeżenie:","Nie wybrano żadnego folderu ze zdjęciami. Przed kontunuacją wybierz folder ze zdjęciami.").exec_()
+            QMessageBox(
+                QMessageBox.Warning, 
+                "Ostrzeżenie:",
+                "Nie wybrano żadnego folderu ze zdjęciami. Przed kontunuacją wybierz folder ze zdjęciami."
+            ).exec_()
+        
+        elif os.path.isdir(self.dlg.fileName.filePath()) is False:
+            QMessageBox(
+                QMessageBox.Warning, 
+                "Ostrzeżenie:",
+                "Ścieżka niepoprawna. Sprawdź, czy ścieżka istnieje."
+            ).exec_()
 
-        elif not os.path.isdir(self.dlg.fileName.filePath()):
-            QMessageBox(QMessageBox.Warning, "Ostrzeżenie:",
-                        "Ścieżka niepoprawna. Sprawdź, czy ścieżka istnieje.").exec_()
         else:
 
             self.addBaseLayers()
@@ -282,8 +297,11 @@ class Photo_Link:
                         print(i)#.split(".")[-1].lower())
                         lista.append((self.input + '\\' + i))
                     else:
-                        QMessageBox(QMessageBox.Warning, "Ostrzeżenie:",
-                                    f"Zdjęcie {i} nie zostało dodane z powodu nieprawidłowego formatu.").exec_()
+                        QMessageBox(
+                            QMessageBox.Warning,
+                            "Ostrzeżenie:",
+                            f"Zdjęcie {i} nie zostało dodane z powodu nieprawidłowego formatu."
+                        ).exec_()
 
                 for i in lista:
                     with open(i, 'rb') as src:
@@ -324,8 +342,11 @@ class Photo_Link:
                                 pass
                         except:
                             # lista.remove(i)
-                            QMessageBox(QMessageBox.Warning, "Ostrzeżenie:",
-                                        f"Zdjęcie {i} nie posiada zapisanej lokalizacji, sprawdź, czy przed zrobieniem zdjęcia była włączona lokalizacja.").exec_()
+                            QMessageBox(
+                                QMessageBox.Warning,
+                                "Ostrzeżenie:",
+                                f"Zdjęcie {i} nie posiada zapisanej lokalizacji, sprawdź, czy przed zrobieniem zdjęcia była włączona lokalizacja."
+                            ).exec_()
                             pass
                 print(coordinates_X,"Długosć listy X",len(coordinates_Y),"Długość listy Y")
                 if len(coordinates_X) > 0 or len(coordinates_Y) > 0:
@@ -334,8 +355,6 @@ class Photo_Link:
                         print(x, y)
                         X_pop.append(x[0] + x[1] / 60 + x[2] / 3600)
                         Y_pop.append(y[0] + y[1] / 60 + y[2] / 3600)
-
-
 
             except:
                 lista.clear()
@@ -402,25 +421,38 @@ class Photo_Link:
 
             # Zapisywanie warstwy do ścieżki lokalnej
             if self.dlg.fileName_2.filePath() == "":
-                self.iface.messageBar().pushSuccess("Sukces", "Warstwa z sukcesem została utworzona w pamięci")
+                self.iface.messageBar().pushSuccess(
+                    "Sukces",
+                    "Warstwa z sukcesem została utworzona w pamięci"
+                )
 
-            elif not self.output.endswith(".shp") or self.output.endswith(".gpkg"):
-
-                QMessageBox(QMessageBox.Warning, "Ostrzeżenie:",
-                            "Ścieżka niepoprawna. Sprawdź, czy ścieżka istnieje.").exec_()
+            elif self.dlg.fileName_2.filePath().endswith(".shp") is False and self.dlg.fileName_2.filePath().endswith(".gpkg") is False:
+                QMessageBox(
+                    QMessageBox.Warning,
+                    "Ostrzeżenie:",
+                    "Ścieżka niepoprawna. Sprawdź, czy ścieżka istnieje."
+                ).exec_()
 
             else:
                 transform_context = self.project.transformContext()
                 save_options = QgsVectorFileWriter.SaveVectorOptions()
 
-                QgsVectorFileWriter.writeAsVectorFormatV2(layer, self.output, transform_context, save_options)
-                self.iface.messageBar().pushSuccess("Sukces",
-                                                    f"Obiekty z sukcesem zostały wyeksportowane do ścieżki: {self.output}")
+                QgsVectorFileWriter.writeAsVectorFormatV2(
+                    layer,
+                    self.output,
+                    transform_context,
+                    save_options
+                )
+                self.iface.messageBar().pushSuccess(
+                    "Sukces",
+                    f"Obiekty z sukcesem zostały wyeksportowane do ścieżki: {self.output}"
+                )
 
             self.canvas.setExtent(layer.extent())
             self.canvas.refresh()
 
             self.setNewCrs()
+
     def onClosePlugin(self):
         self.dlg.fileName.setFilePath('')
         self.dlg.fileName_2.setFilePath('')

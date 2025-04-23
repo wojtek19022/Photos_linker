@@ -10,7 +10,7 @@ Plugin workflow:
 Output data is projected in world geographic coordinate system - WGS-84. If in picture is saved and information about picture direction, it will be shown by arrow. If not, in the picture location will be a point.
 If user doesn't select any direction to save data, points with pictures locations will be projected in WEB WGS-84.
 
-Also in the pictures localizations, every signle picture that has metadata, is assigned its' time when the picture had been captured.
+Also in the pictures localizations, every single picture that has metadata, is assigned its' time when the picture had been captured.
 
 <p align = "center">Created by <strong>Wojciech Sołyga</strong> in Python.</p>
 <p align = "center">Last updated: <strong>2.11.2023 r.</strong></p>
